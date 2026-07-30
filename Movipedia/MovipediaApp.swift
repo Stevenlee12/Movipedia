@@ -14,12 +14,11 @@ struct MovipediaApp: App {
     var body: some Scene {
         WindowGroup {
             NavigationStack(path: $router.navigationPath) {
-                GenreListView()
+                GenreListView(router: router)
                     .navigationDestination(for: Destination.self) { destination in
                         view(for: destination)
                     }
             }
-            .environmentObject(router)
         }
     }
 
@@ -27,9 +26,9 @@ struct MovipediaApp: App {
     private func view(for destination: Destination) -> some View {
         switch destination {
         case .discoverMovies(let genre):
-            DiscoverMovieListView(genre: genre)
+            DiscoverMovieListView(genre: genre, router: router)
         case .movieDetail(let movieId):
-            MovieDetailView(movieId: movieId)
+            MovieDetailView(movieId: movieId, router: router)
         }
     }
 }

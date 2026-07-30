@@ -10,15 +10,14 @@ import Kingfisher
 
 struct DiscoverMovieListView: View {
     @StateObject private var presenter: DiscoverPresenter
-    private let router = DiscoverRouter()
 
     private let columns = [
         GridItem(.flexible(), spacing: 12),
         GridItem(.flexible(), spacing: 12)
     ]
 
-    init(genre: GenreModel) {
-        _presenter = StateObject(wrappedValue: DiscoverBuilder.build(genre: genre))
+    init(genre: GenreModel, router: Router) {
+        _presenter = StateObject(wrappedValue: DiscoverBuilder.build(genre: genre, router: router))
     }
 
     var body: some View {
@@ -52,15 +51,13 @@ struct DiscoverMovieListView: View {
         ScrollView {
             LazyVGrid(columns: columns, spacing: 12) {
                 ForEach(presenter.movies) { movie in
-                    NavigationLink {
-                        router.makeMovieDetailView(movieId: movie.id)
-                    } label: {
-                        MovieCardView(movie: movie)
-                    }
-                    .buttonStyle(.plain)
-                    .task {
-                        await presenter.loadNextPageIfNeeded(currentItem: movie)
-                    }
+                    MovieCardView(movie: movie)
+                        .onTapGesture {
+                            presenter.didTapMovie(movie.id)
+                        }
+                        .task {
+                            await presenter.loadNextPageIfNeeded(currentItem: movie)
+                        }
                 }
             }
             .padding(16)
@@ -127,7 +124,7 @@ struct MovieCardView: View {
 struct DiscoverMovieListView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationStack {
-            DiscoverMovieListView(genre: GenreModel(id: 28, name: "Action"))
+            DiscoverMovieListView(genre: GenreModel(id: 28, name: "Action"), router: Router())
         }
     }
 }

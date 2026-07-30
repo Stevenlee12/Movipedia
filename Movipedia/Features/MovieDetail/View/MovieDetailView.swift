@@ -12,8 +12,8 @@ struct MovieDetailView: View {
     @StateObject private var presenter: MovieDetailPresenter
     @State private var showTrailerPlayer = false
 
-    init(movieId: Int) {
-        _presenter = StateObject(wrappedValue: MovieDetailBuilder.build(movieId: movieId))
+    init(movieId: Int, router: Router) {
+        _presenter = StateObject(wrappedValue: MovieDetailBuilder.build(movieId: movieId, router: router))
     }
 
     var body: some View {
@@ -394,7 +394,7 @@ struct MovieDetailView: View {
 struct MovieDetailView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationStack {
-            MovieDetailView(movieId: 550)
+            MovieDetailView(movieId: 550, router: Router())
         }
     }
 }

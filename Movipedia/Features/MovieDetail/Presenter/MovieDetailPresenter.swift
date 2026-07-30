@@ -28,10 +28,12 @@ final class MovieDetailPresenter: ObservableObject {
     private var isLoadingReviewsPage = false
 
     private let interactor: MovieDetailInteractorProtocol
+    private let router: Router
 
-    init(movieId: Int, interactor: MovieDetailInteractorProtocol) {
+    init(movieId: Int, interactor: MovieDetailInteractorProtocol, router: Router) {
         self.movieId = movieId
         self.interactor = interactor
+        self.router = router
     }
 
     func loadMovieDetail() async {

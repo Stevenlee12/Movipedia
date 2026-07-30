@@ -8,13 +8,16 @@
 import SwiftUI
 
 struct GenreListView: View {
-    @StateObject private var presenter = GenreBuilder.build()
-    private let router = GenreRouter()
+    @StateObject private var presenter: GenrePresenter
 
     private let columns = [
         GridItem(.flexible(), spacing: 12),
         GridItem(.flexible(), spacing: 12)
     ]
+
+    init(router: Router) {
+        _presenter = StateObject(wrappedValue: GenreBuilder.build(router: router))
+    }
 
     var body: some View {
         Group {
@@ -39,12 +42,10 @@ struct GenreListView: View {
         ScrollView {
             LazyVGrid(columns: columns, spacing: 12) {
                 ForEach(presenter.genres) { genre in
-                    NavigationLink {
-                        router.makeDiscoverView(genre: genre)
-                    } label: {
-                        genreCard(genre)
-                    }
-                    .buttonStyle(.plain)
+                    genreCard(genre)
+                        .onTapGesture {
+                            presenter.didTapGenre(genre)
+                        }
                 }
             }
             .padding(16)
@@ -114,7 +115,7 @@ struct GenreListView: View {
 struct GenreListView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationStack {
-            GenreListView()
+            GenreListView(router: Router())
         }
     }
 }

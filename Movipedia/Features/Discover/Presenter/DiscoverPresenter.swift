@@ -21,10 +21,12 @@ final class DiscoverPresenter: ObservableObject {
     private var totalPages = 1
     private var isLoadingPage = false
     private let interactor: DiscoverInteractorProtocol
+    private let router: Router
 
-    init(genre: GenreModel, interactor: DiscoverInteractorProtocol) {
+    init(genre: GenreModel, interactor: DiscoverInteractorProtocol, router: Router) {
         self.genre = genre
         self.interactor = interactor
+        self.router = router
     }
 
     func loadMovies() async {
@@ -72,5 +74,9 @@ final class DiscoverPresenter: ObservableObject {
 
         isLoadingNextPage = false
         isLoadingPage = false
+    }
+
+    func didTapMovie(_ movieId: Int) {
+        router.push(.movieDetail(movieId: movieId))
     }
 }

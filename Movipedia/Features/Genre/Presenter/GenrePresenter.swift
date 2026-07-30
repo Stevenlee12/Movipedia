@@ -15,9 +15,11 @@ final class GenrePresenter: ObservableObject {
     @Published var errorMessage: String?
 
     private let interactor: GenreInteractorProtocol
+    private let router: Router
 
-    init(interactor: GenreInteractorProtocol) {
+    init(interactor: GenreInteractorProtocol, router: Router) {
         self.interactor = interactor
+        self.router = router
     }
 
     func loadGenresIfNeeded() async {
@@ -36,5 +38,9 @@ final class GenrePresenter: ObservableObject {
         }
 
         isLoading = false
+    }
+
+    func didTapGenre(_ genre: GenreModel) {
+        router.push(.discoverMovies(genre: genre))
     }
 }
