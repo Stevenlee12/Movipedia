@@ -6,44 +6,39 @@
 //
 
 import Foundation
-import Combine
 import Alamofire
 
 protocol NetworkManagerProtocol {
-    func performGetRequest<T: Codable>(endpoint: EndpointProtocol) -> AnyPublisher<T, Error>
+    func performGetRequest<T: Codable>(endpoint: EndpointProtocol) async throws -> T
 }
 
 final class NetworkManager: NetworkManagerProtocol {
     static let shared = NetworkManager()
-    
+
     private let decoder: JSONDecoder = {
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .convertFromSnakeCase
         return decoder
     }()
-    
-    func performGetRequest<T: Codable>(endpoint: EndpointProtocol) -> AnyPublisher<T, Error> {
+
+    func performGetRequest<T: Codable>(endpoint: EndpointProtocol) async throws -> T {
         guard let url = endpoint.url else {
-            return Fail(error: NetworkError.invalidURL).eraseToAnyPublisher()
+            throw NetworkError.invalidURL
         }
-        
-        return AF.request(url)
+
+        let response = await AF.request(url)
             .validate()
-            .publishData()
-            .tryMap { response in
-                guard let httpResponse = response.response, (200...299).contains(httpResponse.statusCode) else {
-                    let message = String(data: response.data ?? Data(), encoding: .utf8) ?? "Unknown error"
-                    throw NetworkError.http(code: response.response?.statusCode ?? -1, message: message)
-                }
-                return response.data ?? Data()
+            .serializingDecodable(T.self, decoder: decoder)
+            .response
+
+        switch response.result {
+        case .success(let value):
+            return value
+        case .failure(let error):
+            if let afError = error.asAFError, afError.isResponseSerializationError {
+                throw DataError.decodingFail(message: error.localizedDescription)
             }
-            .decode(type: T.self, decoder: decoder)
-            .mapError { error in
-                if error is DecodingError {
-                    return DataError.decodingFail(message: error.localizedDescription)
-                }
-                return error
-            }
-            .eraseToAnyPublisher()
+            throw NetworkError.custom(message: error.localizedDescription)
+        }
     }
 }

@@ -5,8 +5,8 @@
 //  Created by Steven Lie on 29/07/26.
 //
 
-import SwiftUI
 import Combine
+import SwiftUI
 
 final class Router: ObservableObject {
     @Published var navigationPath: [Destination] = []
